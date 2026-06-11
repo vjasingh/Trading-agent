@@ -1,0 +1,17 @@
+venv/
+__pycache__/
+*.pyc
+.env
+.DS_Store
+hello.py
+test_email.py
+test_earnings.py
+tradier_test.py
+tradier_options.py
+analyze_tsla.py
+analyze_tsla_v2.py
+analyze_tsla_v3.py
+analyze_tsla_v4.py
+agent_v1.py
+agent_v2.py
+agent_v3.py
