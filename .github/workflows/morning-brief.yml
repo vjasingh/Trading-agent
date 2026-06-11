@@ -1,0 +1,36 @@
+name: Morning Trading Brief
+
+on:
+  schedule:
+    # 8:30 AM ET = 12:30 UTC (during EST) / 13:30 UTC (during EDT)
+    # Run at 12:30 UTC year-round; this means 8:30 AM ET during EDT and 7:30 AM ET during EST
+    # We'll use 13:30 UTC for EDT (March-November) which is the main trading period
+    - cron: '30 13 * * 1-5'
+  workflow_dispatch:  # Allows manual trigger from GitHub UI for testing
+
+jobs:
+  send-brief:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run trading agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TRADIER_TOKEN: ${{ secrets.TRADIER_TOKEN }}
+          GMAIL_SENDER: ${{ secrets.GMAIL_SENDER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        run: python agent_v4.py
