@@ -1,43 +1,43 @@
-name: Morning Trading Brief
+name: Weekly Trade Evaluation
 
 on:
   schedule:
-    # 6:17 AM ET = 10:17 UTC (EDT, Mar-Nov); absorbs GitHub's typical scheduling delays
-    - cron: '17 10 * * 1-5'
-  workflow_dispatch:  # Allows manual trigger from GitHub UI for testing
+    # Every Friday at 22:00 UTC = 6 PM ET (after market close)
+    - cron: '0 22 * * 5'
+  workflow_dispatch:  # Manual trigger for testing
 
 jobs:
-  send-brief:
+  evaluate:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    
+    permissions:
+      contents: write  # Allow pushing updated CSV back to repo
+
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      
-      - name: Run trading agent
+
+      - name: Run evaluation
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           TRADIER_TOKEN: ${{ secrets.TRADIER_TOKEN }}
           GMAIL_SENDER: ${{ secrets.GMAIL_SENDER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-          FINNHUB_TOKEN: ${{ secrets.FINNHUB_TOKEN }}
-        run: python agent_v4.py
+        run: python evaluate_recommendations.py
 
-      - name: Commit recommendation log
+      - name: Commit updated log
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add recommendations_log.csv
-          git diff --staged --quiet || git commit -m "Log recommendations $(date +%Y-%m-%d)"
+          git diff --staged --quiet || git commit -m "Update outcomes $(date +%Y-%m-%d)"
           git push

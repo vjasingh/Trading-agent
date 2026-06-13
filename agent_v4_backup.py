@@ -2,9 +2,6 @@
 Trading Agent v4 — Multi-ticker brief with TSLA dedicated section
 """
 import os
-import re
-import json
-import csv
 import requests
 import anthropic
 import yfinance as yf
@@ -13,7 +10,6 @@ import markdown as md
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta, date
-from pathlib import Path
 import statistics
 
 TRADIER_TOKEN = os.environ.get("TRADIER_TOKEN")
@@ -58,11 +54,6 @@ CONTEXT_TICKERS = ["SPY", "QQQ", "VIX"]
 HIGH_RISK_TICKERS = {"OKLO", "TEM", "PLTR"}
 MAX_PREMIUM_RISK_MULTIPLIER = 2.0
 MAX_PREMIUM_RISK_DOLLAR = 50_000
-
-LOG_PATH = Path(__file__).parent / "recommendations_log.csv"
-LOG_FIELDS = ["date", "ticker", "type", "strike", "expiry", "credit",
-              "stock_price", "delta", "iv", "dte", "contracts", "stars",
-              "outcome", "close_at_expiry", "pnl", "evaluated_date"]
 
 
 def get_rules(ticker):
@@ -431,18 +422,7 @@ If total exceeds ${ACCOUNT_BP:,}, FLAG IT and reduce sizes.
 **7. KEY RISKS / FLAGS**
 2-3 specific bullets on broader risk themes (vol regime, earnings clusters, technical themes).
 
-Be concise and decisive. Use real numbers. Math must be correct.
-
----
-SYSTEM LOGGING — Append this block at the very end of your response (it is stripped before email delivery):
-
-RECOMMENDATION_LOG_JSON
-{{"date": "{datetime.now().strftime('%Y-%m-%d')}", "recommendations": [
-  {{"ticker": "TICKER", "type": "put", "strike": 0.0, "expiry": "YYYY-MM-DD", "credit": 0.00, "stock_price": 0.00, "delta": 0.000, "iv": 0.0, "dte": 0, "contracts": 0, "stars": null}}
-]}}
-END_RECOMMENDATION_LOG_JSON
-
-Replace the template with real values — one object per recommended trade (TSLA put, TSLA CC, each watchlist pick). For "type" use "put" or "call". For "stars" use integer 3/4/5 for watchlist picks, null for TSLA trades."""
+Be concise and decisive. Use real numbers. Math must be correct."""
 
     client = anthropic.Anthropic()
     response = client.messages.create(
@@ -451,46 +431,6 @@ Replace the template with real values — one object per recommended trade (TSLA
         messages=[{"role": "user", "content": prompt}]
     )
     return response.content[0].text
-
-
-def parse_and_strip_log(brief_text):
-    """Extract the JSON log block from Claude's response. Always safe — never blocks email."""
-    try:
-        pattern = r'RECOMMENDATION_LOG_JSON\s*(.*?)\s*END_RECOMMENDATION_LOG_JSON'
-        match = re.search(pattern, brief_text, re.DOTALL)
-        if not match:
-            print("  ⚠️ No recommendation log block found in brief")
-            return brief_text, []
-        clean_brief = re.sub(pattern, '', brief_text, flags=re.DOTALL).strip()
-        data = json.loads(match.group(1).strip())
-        recs = data.get("recommendations", [])
-        print(f"  ✅ Parsed {len(recs)} recommendations from log block")
-        return clean_brief, recs
-    except Exception as e:
-        print(f"  ⚠️ Log parsing failed ({e}) — email unaffected")
-        return brief_text, []
-
-
-def append_recommendations_to_csv(recommendations, run_date):
-    """Append today's recommendations to the log CSV. Safe — never blocks email."""
-    if not recommendations:
-        return
-    try:
-        write_header = not LOG_PATH.exists() or LOG_PATH.stat().st_size == 0
-        with open(LOG_PATH, "a", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=LOG_FIELDS, extrasaction="ignore")
-            if write_header:
-                writer.writeheader()
-            for rec in recommendations:
-                rec.setdefault("date", run_date)
-                rec.setdefault("outcome", "")
-                rec.setdefault("close_at_expiry", "")
-                rec.setdefault("pnl", "")
-                rec.setdefault("evaluated_date", "")
-                writer.writerow(rec)
-        print(f"  ✅ Logged {len(recommendations)} recommendations to {LOG_PATH.name}")
-    except Exception as e:
-        print(f"  ⚠️ CSV logging failed ({e}) — email unaffected")
 
 
 def send_email(subject, body):
@@ -532,22 +472,17 @@ if __name__ == "__main__":
     
     print("\nSending to Claude for analysis...")
     brief = claude_analyze(tsla_data, watchlist_data, context_data)
-
-    print("\nParsing recommendation log...")
-    run_date = datetime.now().strftime("%Y-%m-%d")
-    clean_brief, recommendations = parse_and_strip_log(brief)
-    append_recommendations_to_csv(recommendations, run_date)
-
+    
     print("\n" + "=" * 70)
     print("📊 MORNING BRIEF")
     print("=" * 70)
-    print(clean_brief)
-
+    print(brief)
+    
     print("\n" + "=" * 70)
     print("Sending email...")
     try:
         subject = f"📊 Morning Brief — {datetime.now().strftime('%a %b %d')}"
-        send_email(subject, clean_brief)
+        send_email(subject, brief)
         print(f"✅ Email sent to {RECIPIENT_EMAIL}")
     except Exception as e:
         print(f"❌ Email failed: {e}")
