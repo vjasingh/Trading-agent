@@ -113,6 +113,24 @@ def fetch_earnings(ticker):
     return None
 
 
+def fetch_news(ticker, hours=24):
+    """Fetch recent news headlines for a ticker via yfinance."""
+    try:
+        cutoff = (datetime.utcnow() - timedelta(hours=hours)).timestamp()
+        items = yf.Ticker(ticker).news or []
+        recent = []
+        for item in items:
+            if item.get("providerPublishTime", 0) >= cutoff:
+                title = item.get("title", "").strip()
+                link = item.get("link", "").strip()
+                publisher = item.get("publisher", "").strip()
+                if title and link:
+                    recent.append({"title": title, "link": link, "publisher": publisher})
+        return recent[:5]
+    except Exception:
+        return []
+
+
 def fetch_options_in_range(ticker, dte_min, dte_max, delta_min, delta_max, option_type="put"):
     """Returns expirations list with eligible options of the given type."""
     r = requests.get("https://api.tradier.com/v1/markets/options/expirations",
@@ -179,6 +197,7 @@ def analyze_ticker(ticker, include_calls=False, call_dte_max=None, call_delta_mi
             "ticker": ticker, "rules": rules, "quote": quote,
             "hv_data": fetch_hv_data(ticker),
             "earnings": fetch_earnings(ticker),
+            "news": fetch_news(ticker),
             "puts": fetch_options_in_range(
                 ticker, rules["dte_min"], rules["dte_max"],
                 rules["delta_min"], rules["delta_max"], "put"),
@@ -217,6 +236,24 @@ def build_context_block(context_data):
             text += f", HV Rank: {c['hv_data']['hv_rank']:.0f}"
         text += "\n"
     return text
+
+
+def build_news_block(tsla_data, watchlist_data):
+    """Build a news context block for all recommended tickers."""
+    all_data = ([tsla_data] if tsla_data else []) + [d for d in watchlist_data if d]
+    lines = ["RECENT NEWS (last 24 hours):"]
+    any_news = False
+    for d in all_data:
+        ticker = d["ticker"]
+        news = d.get("news", [])
+        if news:
+            any_news = True
+            lines.append(f"\n{ticker}:")
+            for item in news:
+                lines.append(f'  - [{item["title"]}]({item["link"]}) — {item["publisher"]}')
+    if not any_news:
+        return "RECENT NEWS: None available in last 24 hours.\n"
+    return "\n".join(lines) + "\n"
 
 
 def build_ticker_context(data, include_calls=False):
@@ -282,6 +319,7 @@ def claude_analyze(tsla_data, watchlist_data, context_data):
     context_block = build_context_block(context_data)
     tsla_block = build_ticker_context(tsla_data, include_calls=True) if tsla_data else "TSLA data unavailable"
     watchlist_blocks = "\n".join([build_ticker_context(d) for d in watchlist_data if d])
+    news_block = build_news_block(tsla_data, watchlist_data)
     
     prompt = f"""You are an options analyst producing a morning brief for an experienced premium seller with ${ACCOUNT_BP:,} buying power.
 
@@ -296,6 +334,10 @@ TSLA (USER HOLDS {TSLA_SHARES_HELD} SHARES — UP TO {TSLA_MAX_CC_CONTRACTS} COV
 OTHER WATCHLIST (for ranked setups)
 ═══════════════════════════════════════════
 {watchlist_blocks}
+
+═══════════════════════════════════════════
+{news_block}
+═══════════════════════════════════════════
 
 CRITICAL SIZING RULES (apply to EVERY recommendation):
 For each pick, you MUST compute and show ALL THREE constraints:
@@ -343,12 +385,17 @@ Rank only the strong setups across the OTHER 14 tickers. For each:
 
 ---
 
-**4. WATCH BUT DON'T TRADE**
+**4. NEWS & CATALYSTS**
+For each ticker you recommended (TSLA + top watchlist picks only), list up to 3 key headlines from the RECENT NEWS section above. Format each as a markdown link on its own line: [Headline text](url) — Publisher. After the link, add one phrase noting the impact on the trade thesis (e.g. "bullish catalyst", "watch for vol spike", "no trade impact"). Skip tickers with no news in the last 24h. Do not invent headlines — only use what is in the RECENT NEWS data.
+
+---
+
+**5. WATCH BUT DON'T TRADE**
 One-line per skipped ticker explaining why.
 
 ---
 
-**5. PORTFOLIO SANITY CHECK**
+**6. PORTFOLIO SANITY CHECK**
 Sum the BP deployment across ALL your recommendations (TSLA puts + TSLA CCs + Top setups).
 TSLA puts deploy: (contracts × strike × 100)
 TSLA CCs deploy: $0 BP (covered by shares, no cash needed)
@@ -358,7 +405,7 @@ If total exceeds ${ACCOUNT_BP:,}, FLAG IT and reduce sizes.
 
 ---
 
-**6. KEY RISKS / FLAGS**
+**7. KEY RISKS / FLAGS**
 2-3 specific bullets on broader risk themes (vol regime, earnings clusters, technical themes).
 
 Be concise and decisive. Use real numbers. Math must be correct."""
