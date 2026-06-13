@@ -15,6 +15,7 @@ import statistics
 TRADIER_TOKEN = os.environ.get("TRADIER_TOKEN")
 GMAIL_SENDER = os.environ.get("GMAIL_SENDER")
 GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD")
+FINNHUB_TOKEN = os.environ.get("FINNHUB_TOKEN")
 RECIPIENT_EMAIL = "vja118@gmail.com"
 
 HEADERS = {
@@ -114,20 +115,33 @@ def fetch_earnings(ticker):
 
 
 def fetch_news(ticker, hours=24):
-    """Fetch recent news headlines for a ticker via yfinance."""
+    """Fetch recent news headlines via Finnhub (last 24h)."""
     try:
+        to_date = datetime.utcnow().date()
+        from_date = (datetime.utcnow() - timedelta(hours=hours)).date()
+        r = requests.get(
+            "https://finnhub.io/api/v1/company-news",
+            params={
+                "symbol": ticker,
+                "from": from_date.strftime("%Y-%m-%d"),
+                "to": to_date.strftime("%Y-%m-%d"),
+                "token": FINNHUB_TOKEN,
+            }
+        )
+        items = r.json() if r.status_code == 200 else []
         cutoff = (datetime.utcnow() - timedelta(hours=hours)).timestamp()
-        items = yf.Ticker(ticker).news or []
         recent = []
         for item in items:
-            if item.get("providerPublishTime", 0) >= cutoff:
-                title = item.get("title", "").strip()
-                link = item.get("link", "").strip()
-                publisher = item.get("publisher", "").strip()
+            if item.get("datetime", 0) >= cutoff:
+                title = item.get("headline", "").strip()
+                link = item.get("url", "").strip()
+                publisher = item.get("source", "").strip()
                 if title and link:
                     recent.append({"title": title, "link": link, "publisher": publisher})
+        print(f"    {ticker} news: {len(recent)} items in last {hours}h")
         return recent[:5]
-    except Exception:
+    except Exception as e:
+        print(f"    {ticker} news error: {e}")
         return []
 
 
