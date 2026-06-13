@@ -309,40 +309,45 @@ Show all three numbers explicitly for every pick. Example format:
 
 PRODUCE A MORNING BRIEF WITH THESE SECTIONS IN THIS EXACT ORDER:
 
-═══════════════════════════════════════════
+---
+
 **1. MARKET CONTEXT**
 2-3 sentences on the regime using SPY/QQQ/VIX data. State whether environment is favorable/neutral/unfavorable for premium selling.
 
-═══════════════════════════════════════════
+---
+
 **2. 🚗 TSLA DAILY**
 ALWAYS include this section, regardless of whether TSLA ranks well vs other tickers.
 
 A. **TSLA SHORT PUT RECOMMENDATION** (diagonal short put leg)
-   - Best strike + expiration for today's setup
-   - Credit, delta, IV, cushion
+   - Header line format: "TSLA @ $[current price] | [expiration] $[strike]P @ $[credit] credit ([DTE] DTE)"
+   - Delta, IV, cushion (do NOT repeat current price in the cushion line — it's already in the header)
    - Sizing: show all three constraints, name binding one
    - Reminder: "Verify short put strike is ABOVE your current long put floor"
 
 B. **TSLA COVERED CALL RECOMMENDATION** (label as "CC", NOT "P")
+   - Header line format: "TSLA @ $[current price] | [expiration] $[strike]C @ $[credit] credit ([DTE] DTE)"
    - User holds 1,001 shares → max 10 CC contracts
-   - Best strike + expiration from the available calls
-   - Credit, delta, IV, % distance above current price
+   - Delta, IV, % distance above current price (do NOT repeat current price in body — it's in the header)
    - Sizing: contracts = min(10, what user wants to risk losing shares on)
    - Note: if delta > 0.30, mention higher assignment risk
 
-═══════════════════════════════════════════
+---
+
 **3. TOP 3-5 WATCHLIST SETUPS** (excluding TSLA — that has its own section)
 Rank only the strong setups across the OTHER 14 tickers. For each:
-- Ticker, ⭐ rating, strike + expiration
-- Credit, delta, IV, cushion
+- Header line format: "**[Ticker] @ $[current price]** ⭐⭐⭐ | [expiration] $[strike]P @ $[credit] credit ([DTE] DTE)"
+- Delta, IV, cushion (do NOT repeat current price in the cushion line — it's already in the header)
 - Sizing: ALL THREE constraints with numbers (premium-risk / BP cap / contract cap), name binding
 - 1-line rationale
 
-═══════════════════════════════════════════
+---
+
 **4. WATCH BUT DON'T TRADE**
 One-line per skipped ticker explaining why.
 
-═══════════════════════════════════════════
+---
+
 **5. PORTFOLIO SANITY CHECK**
 Sum the BP deployment across ALL your recommendations (TSLA puts + TSLA CCs + Top setups).
 TSLA puts deploy: (contracts × strike × 100)
@@ -351,7 +356,8 @@ Each watchlist pick: (contracts × strike × 100)
 Total: $X out of ${ACCOUNT_BP:,} BP (X%)
 If total exceeds ${ACCOUNT_BP:,}, FLAG IT and reduce sizes.
 
-═══════════════════════════════════════════
+---
+
 **6. KEY RISKS / FLAGS**
 2-3 specific bullets on broader risk themes (vol regime, earnings clusters, technical themes).
 
