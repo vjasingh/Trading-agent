@@ -10,6 +10,8 @@ jobs:
   send-brief:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: write
     
     steps:
       - name: Check out repo
