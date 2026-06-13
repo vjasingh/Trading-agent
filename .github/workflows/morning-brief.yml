@@ -2,10 +2,8 @@ name: Morning Trading Brief
 
 on:
   schedule:
-    # 8:30 AM ET = 12:30 UTC (during EST) / 13:30 UTC (during EDT)
-    # Run at 12:30 UTC year-round; this means 8:30 AM ET during EDT and 7:30 AM ET during EST
-    # We'll use 13:30 UTC for EDT (March-November) which is the main trading period
-    - cron: '30 13 * * 1-5'
+    # 6:17 AM ET = 10:17 UTC (EDT, Mar-Nov); absorbs GitHub's typical scheduling delays
+    - cron: '17 10 * * 1-5'
   workflow_dispatch:  # Allows manual trigger from GitHub UI for testing
 
 jobs:

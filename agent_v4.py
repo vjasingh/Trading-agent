@@ -6,6 +6,7 @@ import requests
 import anthropic
 import yfinance as yf
 import smtplib
+import markdown as md
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta, date
@@ -372,8 +373,9 @@ def send_email(subject, body):
     msg["To"] = RECIPIENT_EMAIL
     text_part = MIMEText(body, "plain")
     msg.attach(text_part)
-    html = f"""<html><body style="font-family: -apple-system, sans-serif; max-width: 900px; line-height: 1.5;">
-    <pre style="white-space: pre-wrap; font-family: -apple-system, sans-serif;">{body}</pre>
+    html_body = md.markdown(body, extensions=["tables"])
+    html = f"""<html><body style="font-family: -apple-system, sans-serif; max-width: 900px; line-height: 1.6; padding: 16px; color: #1a1a1a;">
+    {html_body}
     </body></html>"""
     msg.attach(MIMEText(html, "html"))
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
