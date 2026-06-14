@@ -2,10 +2,10 @@ name: Update Dashboard
 
 on:
   schedule:
-    # Every 30 min during market hours (EDT = UTC-4)
-    # 9:17 AM – 4:47 PM ET = 13:17 – 20:47 UTC
-    # :17 and :47 offsets avoid top-of-hour GitHub scheduler congestion
-    - cron: '17,47 13-20 * * 1-5'
+    # Pick up morning brief at 9:17 AM ET (13:17 UTC) — brief runs at 6:17 AM, plenty of buffer
+    - cron: '17 13 * * 1-5'
+    # Refresh quotes every 30 min during market hours 10 AM – 4:47 PM ET (14:17–20:47 UTC)
+    - cron: '17,47 14-20 * * 1-5'
   workflow_dispatch:  # Manual trigger for testing
 
 jobs:

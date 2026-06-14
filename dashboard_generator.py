@@ -189,7 +189,7 @@ def _brief_section(brief_data):
   <!-- ══ Morning Brief ════════════════════════════════════════════ -->
   <section class="mb-10">
     <h2 class="text-xl font-bold text-gray-100 mb-4 flex items-center gap-2">
-      <span>📊</span> Today's Morning Brief
+      <span>📊</span> Today's Brief
     </h2>
     <div class="bg-gray-800/50 rounded-2xl p-8 text-center border border-dashed border-gray-700">
       <div class="text-5xl mb-3">⏳</div>
@@ -207,7 +207,7 @@ def _brief_section(brief_data):
   <section class="mb-10">
     <div class="flex flex-wrap items-baseline justify-between gap-2 mb-4">
       <h2 class="text-xl font-bold text-gray-100 flex items-center gap-2">
-        <span>📊</span> Today's Morning Brief
+        <span>📊</span> Today's Brief
       </h2>
       <span class="text-xs text-gray-600">Generated {generated_at} ET</span>
     </div>

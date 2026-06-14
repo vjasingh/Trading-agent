@@ -565,7 +565,7 @@ if __name__ == "__main__":
     print("\n" + "=" * 70)
     print("Sending email...")
     try:
-        subject = f"📊 Morning Brief — {datetime.now().strftime('%a %b %d')}"
+        subject = f"📊 Daily Brief — {datetime.now().strftime('%a %b %d')}"
         send_email(subject, clean_brief)
         print(f"✅ Email sent to {RECIPIENT_EMAIL}")
     except Exception as e:
