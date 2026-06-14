@@ -471,6 +471,24 @@ def parse_and_strip_log(brief_text):
         return brief_text, []
 
 
+def save_latest_brief_json(brief_text, recommendations, run_date):
+    """Save brief content + recommendations to data/latest_brief.json for the dashboard."""
+    try:
+        data_dir = Path(__file__).parent / "data"
+        data_dir.mkdir(exist_ok=True)
+        payload = {
+            "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "run_date": run_date,
+            "brief_text": brief_text,
+            "recommendations": recommendations,
+        }
+        with open(data_dir / "latest_brief.json", "w") as f:
+            json.dump(payload, f, indent=2, default=str)
+        print(f"  ✅ Saved data/latest_brief.json")
+    except Exception as e:
+        print(f"  ⚠️ Failed to save latest_brief.json ({e}) — email unaffected")
+
+
 def append_recommendations_to_csv(recommendations, run_date):
     """Append today's recommendations to the log CSV. Safe — never blocks email."""
     if not recommendations:
@@ -537,6 +555,7 @@ if __name__ == "__main__":
     run_date = datetime.now().strftime("%Y-%m-%d")
     clean_brief, recommendations = parse_and_strip_log(brief)
     append_recommendations_to_csv(recommendations, run_date)
+    save_latest_brief_json(clean_brief, recommendations, run_date)
 
     print("\n" + "=" * 70)
     print("📊 MORNING BRIEF")

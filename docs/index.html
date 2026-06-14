@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Personal trading dashboard — options premium strategy">
+  <link rel="apple-touch-icon" href="favicon.png">
+  <link rel="icon" href="favicon.png">
+  <title>Trading Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ── Dark base ──────────────────────────────────────────────── */
+    body { background-color: #030712; }  /* gray-950 */
+
+    /* ── Hide scrollbar on quotes strip (keep scroll functionality) */
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+    /* ── Morning brief markdown rendering ───────────────────────── */
+    .brief-content h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #f3f4f6;
+      border-bottom: 1px solid #374151;
+      padding-bottom: 5px;
+      margin-top: 1.8rem;
+      margin-bottom: 0.75rem;
+    }
+    .brief-content h2:first-child { margin-top: 0; }
+    .brief-content h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #e5e7eb;
+      margin-top: 1.1rem;
+      margin-bottom: 0.4rem;
+    }
+    .brief-content p {
+      color: #d1d5db;
+      font-size: 0.875rem;
+      line-height: 1.65;
+      margin-bottom: 0.55rem;
+    }
+    .brief-content ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+      margin-bottom: 0.7rem;
+    }
+    .brief-content li {
+      color: #d1d5db;
+      font-size: 0.875rem;
+      line-height: 1.65;
+      margin-bottom: 0.2rem;
+    }
+    .brief-content a {
+      color: #60a5fa;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .brief-content a:hover { color: #93c5fd; }
+    .brief-content hr {
+      border: none;
+      border-top: 1px solid #374151;
+      margin: 1.25rem 0;
+    }
+    .brief-content strong { color: #f9fafb; font-weight: 600; }
+    .brief-content table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      margin: 0.75rem 0 1rem;
+    }
+    .brief-content th {
+      background: #1f2937;
+      color: #9ca3af;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+    .brief-content td {
+      padding: 7px 12px;
+      color: #d1d5db;
+      border-top: 1px solid #1f2937;
+    }
+    .brief-content tr:hover td { background: #1f2937; }
+
+    /* ── Mobile touch targets ───────────────────────────────────── */
+    @media (max-width: 640px) {
+      .brief-content p, .brief-content li { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body class="text-gray-100 min-h-screen font-sans antialiased">
+
+  
+  <!-- ══ Sticky Quotes Strip ══════════════════════════════════════ -->
+  <div id="quotes-strip" class="sticky top-0 z-50 bg-gray-900/95 backdrop-blur border-b border-gray-700/50 shadow-xl">
+    <div class="px-4 pt-2">
+      <span class="text-xs text-gray-600">Quotes as of 7:51 PM ET, Jun 13 2026 &nbsp;·&nbsp; refreshes every 30 min during market hours</span>
+    </div>
+    <div class="flex gap-2 px-4 pt-1.5 pb-3 overflow-x-auto scrollbar-hide">
+      
+        <div class="flex-shrink-0 bg-gray-800/60 rounded-lg px-3 py-2 min-w-[74px] text-center">
+          <div class="text-xs text-gray-500 font-medium tracking-wide">SPY</div>
+          <div class="text-sm font-bold text-gray-600 mt-0.5">—</div>
+          <div class="text-xs text-gray-700 mt-0.5">N/A</div>
+        </div>
+
+        <div class="flex-shrink-0 bg-gray-800/60 rounded-lg px-3 py-2 min-w-[74px] text-center">
+          <div class="text-xs text-gray-500 font-medium tracking-wide">QQQ</div>
+          <div class="text-sm font-bold text-gray-600 mt-0.5">—</div>
+          <div class="text-xs text-gray-700 mt-0.5">N/A</div>
+        </div>
+
+        <div class="flex-shrink-0 bg-gray-800/60 rounded-lg px-3 py-2 min-w-[74px] text-center">
+          <div class="text-xs text-gray-500 font-medium tracking-wide">VIX</div>
+          <div class="text-sm font-bold text-gray-600 mt-0.5">—</div>
+          <div class="text-xs text-gray-700 mt-0.5">N/A</div>
+        </div>
+
+        <div class="flex-shrink-0 bg-gray-800/60 rounded-lg px-3 py-2 min-w-[74px] text-center">
+          <div class="text-xs text-gray-500 font-medium tracking-wide">TSLA</div>
+          <div class="text-sm font-bold text-gray-600 mt-0.5">—</div>
+          <div class="text-xs text-gray-700 mt-0.5">N/A</div>
+        </div>
+
+        <div class="flex-shrink-0 bg-gray-800/60 rounded-lg px-3 py-2 min-w-[74px] text-center">
+          <div class="text-xs text-gray-500 font-medium tracking-wide">AAPL</div>
+          <div class="text-sm font-bold text-gray-600 mt-0.5">—</div>
+          <div class="text-xs text-gray-700 mt-0.5">N/A</div>
+        </div>
+
+        <div class="flex-shrink-0 bg-gray-800/60 rounded-lg px-3 py-2 min-w-[74px] text-center">
+          <div class="text-xs text-gray-500 font-medium tracking-wide">NVDA</div>
+          <div class="text-sm font-bold text-gray-600 mt-0.5">—</div>
+          <div class="text-xs text-gray-700 mt-0.5">N/A</div>
+        </div>
+
+        <div class="flex-shrink-0 bg-gray-800/60 rounded-lg px-3 py-2 min-w-[74px] text-center">
+          <div class="text-xs text-gray-500 font-medium tracking-wide">AMD</div>
+          <div class="text-sm font-bold text-gray-600 mt-0.5">—</div>
+          <div class="text-xs text-gray-700 mt-0.5">N/A</div>
+        </div>
+
+        <div class="flex-shrink-0 bg-gray-800/60 rounded-lg px-3 py-2 min-w-[74px] text-center">
+          <div class="text-xs text-gray-500 font-medium tracking-wide">AMZN</div>
+          <div class="text-sm font-bold text-gray-600 mt-0.5">—</div>
+          <div class="text-xs text-gray-700 mt-0.5">N/A</div>
+        </div>
+
+        <div class="flex-shrink-0 bg-gray-800/60 rounded-lg px-3 py-2 min-w-[74px] text-center">
+          <div class="text-xs text-gray-500 font-medium tracking-wide">MSFT</div>
+          <div class="text-sm font-bold text-gray-600 mt-0.5">—</div>
+          <div class="text-xs text-gray-700 mt-0.5">N/A</div>
+        </div>
+
+        <div class="flex-shrink-0 bg-gray-800/60 rounded-lg px-3 py-2 min-w-[74px] text-center">
+          <div class="text-xs text-gray-500 font-medium tracking-wide">AVGO</div>
+          <div class="text-sm font-bold text-gray-600 mt-0.5">—</div>
+          <div class="text-xs text-gray-700 mt-0.5">N/A</div>
+        </div>
+
+        <div class="flex-shrink-0 bg-gray-800/60 rounded-lg px-3 py-2 min-w-[74px] text-center">
+          <div class="text-xs text-gray-500 font-medium tracking-wide">GOOGL</div>
+          <div class="text-sm font-bold text-gray-600 mt-0.5">—</div>
+          <div class="text-xs text-gray-700 mt-0.5">N/A</div>
+        </div>
+
+        <div class="flex-shrink-0 bg-gray-800/60 rounded-lg px-3 py-2 min-w-[74px] text-center">
+          <div class="text-xs text-gray-500 font-medium tracking-wide">LLY</div>
+          <div class="text-sm font-bold text-gray-600 mt-0.5">—</div>
+          <div class="text-xs text-gray-700 mt-0.5">N/A</div>
+        </div>
+
+        <div class="flex-shrink-0 bg-gray-800/60 rounded-lg px-3 py-2 min-w-[74px] text-center">
+          <div class="text-xs text-gray-500 font-medium tracking-wide">OKLO</div>
+          <div class="text-sm font-bold text-gray-600 mt-0.5">—</div>
+          <div class="text-xs text-gray-700 mt-0.5">N/A</div>
+        </div>
+
+        <div class="flex-shrink-0 bg-gray-800/60 rounded-lg px-3 py-2 min-w-[74px] text-center">
+          <div class="text-xs text-gray-500 font-medium tracking-wide">TEM</div>
+          <div class="text-sm font-bold text-gray-600 mt-0.5">—</div>
+          <div class="text-xs text-gray-700 mt-0.5">N/A</div>
+        </div>
+
+        <div class="flex-shrink-0 bg-gray-800/60 rounded-lg px-3 py-2 min-w-[74px] text-center">
+          <div class="text-xs text-gray-500 font-medium tracking-wide">SHOP</div>
+          <div class="text-sm font-bold text-gray-600 mt-0.5">—</div>
+          <div class="text-xs text-gray-700 mt-0.5">N/A</div>
+        </div>
+
+        <div class="flex-shrink-0 bg-gray-800/60 rounded-lg px-3 py-2 min-w-[74px] text-center">
+          <div class="text-xs text-gray-500 font-medium tracking-wide">HOOD</div>
+          <div class="text-sm font-bold text-gray-600 mt-0.5">—</div>
+          <div class="text-xs text-gray-700 mt-0.5">N/A</div>
+        </div>
+
+        <div class="flex-shrink-0 bg-gray-800/60 rounded-lg px-3 py-2 min-w-[74px] text-center">
+          <div class="text-xs text-gray-500 font-medium tracking-wide">PLTR</div>
+          <div class="text-sm font-bold text-gray-600 mt-0.5">—</div>
+          <div class="text-xs text-gray-700 mt-0.5">N/A</div>
+        </div>
+
+        <div class="flex-shrink-0 bg-gray-800/60 rounded-lg px-3 py-2 min-w-[74px] text-center">
+          <div class="text-xs text-gray-500 font-medium tracking-wide">GILD</div>
+          <div class="text-sm font-bold text-gray-600 mt-0.5">—</div>
+          <div class="text-xs text-gray-700 mt-0.5">N/A</div>
+        </div>
+    </div>
+  </div>
+
+  <!-- ══ Page header ═════════════════════════════════════════════ -->
+  <header class="max-w-5xl mx-auto px-4 pt-5 pb-3">
+    <div class="flex items-start justify-between">
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight text-gray-100">Trading Dashboard</h1>
+        <p class="text-xs text-gray-600 mt-0.5">Premium Seller · Options Strategy</p>
+      </div>
+      <div class="text-right shrink-0">
+        <div class="text-xs text-gray-700">Built</div>
+        <div class="text-xs text-gray-600">2026-06-13 23:51 UTC</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══ Main content ════════════════════════════════════════════ -->
+  <main class="max-w-5xl mx-auto px-4 pb-6">
+    
+  <!-- ══ Morning Brief ════════════════════════════════════════════ -->
+  <section class="mb-10">
+    <h2 class="text-xl font-bold text-gray-100 mb-4 flex items-center gap-2">
+      <span>📊</span> Today's Morning Brief
+    </h2>
+    <div class="bg-gray-800/50 rounded-2xl p-8 text-center border border-dashed border-gray-700">
+      <div class="text-5xl mb-3">⏳</div>
+      <p class="font-semibold text-gray-300 text-lg">Brief not yet generated</p>
+      <p class="text-sm text-gray-500 mt-2">Runs automatically at 6:17 AM ET on weekdays.</p>
+    </div>
+  </section>
+    
+  <!-- ══ Historical Performance ══════════════════════════════════ -->
+  <section class="mb-10">
+    <h2 class="text-xl font-bold text-gray-100 mb-4 flex items-center gap-2">
+      <span>📈</span> Historical Performance
+    </h2>
+    <div class="bg-gray-800/50 rounded-2xl p-8 border border-dashed border-gray-700">
+      <div class="text-center mb-6">
+        <div class="text-5xl mb-3">🌱</div>
+        <p class="font-semibold text-gray-300 text-lg">Collecting data</p>
+        <p class="text-sm text-gray-500 mt-1 max-w-md mx-auto">
+          Full analytics appear after 2+ weeks of history. Once positions start
+          expiring you'll see win rates by star rating, P&amp;L tracking, and
+          calibration stats.
+        </p>
+      </div>
+      <div class="grid grid-cols-3 gap-3 max-w-xs mx-auto text-center">
+        <div class="bg-gray-700/60 rounded-xl p-4">
+          <div class="text-2xl font-bold text-amber-400">0</div>
+          <div class="text-xs text-gray-500 mt-1">Picks logged</div>
+        </div>
+        <div class="bg-gray-700/60 rounded-xl p-4">
+          <div class="text-2xl font-bold text-gray-300">0</div>
+          <div class="text-xs text-gray-500 mt-1">Expired</div>
+        </div>
+        <div class="bg-gray-700/60 rounded-xl p-4">
+          <div class="text-2xl font-bold text-gray-300">0</div>
+          <div class="text-xs text-gray-500 mt-1">Days tracked</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  </main>
+
+  <!-- ══ Footer ══════════════════════════════════════════════════ -->
+  <footer class="max-w-5xl mx-auto px-4 pb-10 text-center">
+    <p class="text-xs text-gray-800">
+      For informational purposes only &nbsp;·&nbsp; Not financial advice
+      &nbsp;·&nbsp; Data: Tradier &amp; Finnhub &nbsp;·&nbsp; Built with Claude
+    </p>
+  </footer>
+
+</body>
+</html>
