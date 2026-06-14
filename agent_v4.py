@@ -385,26 +385,51 @@ PRODUCE A MORNING BRIEF WITH THESE SECTIONS IN THIS EXACT ORDER:
 ALWAYS include this section, regardless of whether TSLA ranks well vs other tickers.
 
 A. **TSLA SHORT PUT RECOMMENDATION** (diagonal short put leg)
-   - Header line format: "TSLA @ $[current price] | [expiration] $[strike]P @ $[credit] credit ([DTE] DTE)"
-   - Delta, IV, cushion (do NOT repeat current price in the cushion line — it's already in the header)
-   - Sizing: show all three constraints, name binding one
-   - Reminder: "Verify short put strike is ABOVE your current long put floor"
+
+Use EXACTLY this format (bullet points required, no cramming onto one line):
+
+**TSLA @ $[current price] | [expiration] $[strike]P @ $[credit] credit ([DTE] DTE)**
+
+- **Delta:** [value] | **IV:** [value]%
+- **Cushion:** $[amount] ([%]) to strike; breakeven $[price] ([%] below current)
+- **Volume/OI:** [vol] / [OI] ([liquidity comment])
+
+**Sizing:** Premium-risk cap: $50,000 / ([multiplier] × $[credit] × 100) = [X] contracts - Single-ticker BP cap: $[BP cap] / ($[strike] × 100) = [Y] contracts - Contract cap: [Z] contracts max - **BINDING: [N] contracts** ([binding constraint name])
+
+**Total BP deployment:** [N] × $[strike] × 100 = $[total]
+
+**Reminder:** Verify short put strike is ABOVE your current long put floor
 
 B. **TSLA COVERED CALL RECOMMENDATION** (label as "CC", NOT "P")
-   - Header line format: "TSLA @ $[current price] | [expiration] $[strike]C @ $[credit] credit ([DTE] DTE)"
-   - User holds 1,001 shares → max 10 CC contracts
-   - Delta, IV, % distance above current price (do NOT repeat current price in body — it's in the header)
-   - Sizing: contracts = min(10, what user wants to risk losing shares on)
-   - Note: if delta > 0.30, mention higher assignment risk
+
+Use EXACTLY this format (bullet points required, no cramming onto one line):
+
+**TSLA @ $[current price] | [expiration] $[strike]C @ $[credit] credit ([DTE] DTE)**
+
+- **Delta:** [value] | **IV:** [value]%
+- **Distance:** $[amount] above current ([%] upside to strike)
+- **Volume/OI:** [vol] / [OI] ([liquidity comment])
+
+**Sizing:** User holds 1,001 shares → max 10 CC contracts - [rationale for # recommended] - **Recommend: [N] contracts**
+
+**BP deployment:** $0 (covered by shares)
+
+**Note:** [if delta > 0.30, mention assignment risk; otherwise omit]
 
 ---
 
 **3. TOP 3-5 WATCHLIST SETUPS** (excluding TSLA — that has its own section)
-Rank only the strong setups across the OTHER 14 tickers. For each:
-- Header line format: "**[Ticker] @ $[current price]** ⭐⭐⭐ | [expiration] $[strike]P @ $[credit] credit ([DTE] DTE)"
-- Delta, IV, cushion (do NOT repeat current price in the cushion line — it's already in the header)
-- Sizing: ALL THREE constraints with numbers (premium-risk / BP cap / contract cap), name binding
-- 1-line rationale
+Rank only the strong setups across the OTHER 14 tickers. For each, use EXACTLY this format (bullet points required):
+
+**[Ticker] @ $[current price]** ⭐⭐⭐ | [expiration] $[strike]P @ $[credit] credit ([DTE] DTE)
+
+- **Delta:** [value] | **IV:** [value]%
+- **Cushion:** $[amount] ([%]) to strike
+- **Volume/OI:** [vol] / [OI] ([liquidity comment])
+
+**Sizing:** premium-risk = [X] / BP cap = [Y] / contract cap = [Z] → **BINDING: [N] contracts**
+
+**Rationale:** [1-line explanation]
 
 ---
 
