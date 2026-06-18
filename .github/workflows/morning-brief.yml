@@ -1,9 +1,10 @@
 name: Morning Trading Brief
 
 on:
-  schedule:
-    # 6:17 AM ET = 10:17 UTC (EDT, Mar-Nov); absorbs GitHub's typical scheduling delays
-    - cron: '17 10 * * 1-5'
+# schedule:
+ #   # 6:17 AM ET = 10:17 UTC (EDT, Mar-Nov); absorbs GitHub's typical scheduling delays
+ #   - cron: '17 10 * * 1-5'
+#   DISABLED — now triggered by cron-job.org at exactly 11:00 UTC (7 AM ET)
   workflow_dispatch:  # Allows manual trigger from GitHub UI for testing
 
 jobs:
